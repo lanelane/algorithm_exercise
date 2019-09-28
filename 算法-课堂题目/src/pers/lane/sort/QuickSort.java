@@ -50,8 +50,8 @@ public static void quicksort1(int[]A,int L,int R)
 	else
 	{
 		int p=partition(A,L,R);
-		quciksort1(A,L,p-1);
-		quciksort1(A,p+1,R);
+		quicksort1(A,L,p-1);
+		quicksort1(A,p+1,R);
 	}
 }
 }
