@@ -34,35 +34,41 @@ private MyTimSort(int []a)
 }
 	
 public static void main(String[] args) {
-	int[]a= new int[30000];
+	int[]a= new int[100000];
 	int[]b=new int[a.length];
 	int[]c=new int[a.length];
 	int[]d=new int[a.length];
+	int[]e=new int[a.length];
 	for(int i=0;i<a.length;i++)
 	{
-		a[i]=(int)(Math.random()*30+1);
+		a[i]=(int)(Math.random()*100+1);
 	}
 	System.arraycopy(a, 0, b, 0, a.length);
 	System.arraycopy(a, 0, c, 0, a.length);
 	System.arraycopy(a, 0, d, 0, a.length);
+	System.arraycopy(a, 0, e, 0, a.length);
 	System.out.println(Arrays.toString(a));
 	MyTimSort mts=new MyTimSort(a);
-	long start=System.currentTimeMillis();
+	long start=System.nanoTime();
    mts.sort();
-   long end=System.currentTimeMillis();
-   System.out.println("TimSort耗时:"+(end-start)+"ms");
-   long start2=System.currentTimeMillis();
+   long end=System.nanoTime();
+   System.out.println("TimSort耗时:"+(end-start)+"ns");
+   /*long start2=System.currentTimeMillis();
    quicksort1(b,0,b.length-1);
    long end2=System.currentTimeMillis();
    System.out.println("快排耗时:"+(end2-start2)+"ms");
    long start3=System.currentTimeMillis();
    heapSort(c);
    long end3=System.currentTimeMillis();
-   System.out.println("堆排序耗时:"+(end3-start3)+"ms");   
-   long start4=System.currentTimeMillis();
+   System.out.println("堆排序耗时:"+(end3-start3)+"ms");   */
+   long start4=System.nanoTime();
   mergesort(d,0,d.length-1);
-   long end4=System.currentTimeMillis();
-   System.out.println("归并排序耗时:"+(end4-start4)+"ms");   
+  long end4=System.nanoTime();
+   System.out.println("归并排序耗时:"+(end4-start4)+"ns");   
+   long start5=System.nanoTime();
+   MyTimSort.binaryInsertSort(e, 0, 0, e.length-1);
+   long end5=System.nanoTime();
+   System.out.println("二分插入排序耗时:"+(end5-start5)+"ns");   
 }
 
 	
@@ -237,10 +243,86 @@ private void checkMerge()
 	
 }
 
+private static int findFirst(int low1,int high1,int low2,int high2)
+{
+	int i=low1;
+	int k=i;//最终查找范围的起点i
+	int j=0;
+	while(i<=high1)
+	{
+		if(a[i]<=a[low2])
+		{
+			k=i;
+			i=(int) (i+Math.pow(2, j));
+			j++;
+		}
+		else break;//如果相等，则插在原数据之后
+	}
+	if(i>high1) i=high1;
+	if(i==low1) return low1;//插到第一个位置
+	//二分查找
+    int low=k; 
+    int high=i;
+	while(low<=high)
+	{
+		int mid=(low+high)/2;
+		if(a[mid]==a[low2])
+		{
+			return (mid+1);//相等则插到之后的位置，保持稳定性
+		}
+		else if(a[mid]<a[low2])
+		{
+			low=mid+1;
+		}
+		else high=mid-1;
+	}	
+	return low;//插到low之前的位置上
+}
 
-//合并
+//找左边run的最后一个元素在右边run的什么位置
+private static int findLast(int low1,int high1,int low2,int high2)
+{
+	int i=high2;
+	int k=high2;//最终查找范围的起点
+	int j=0;
+	while(i>=low2)
+	{
+		if(a[i]>=a[high1])
+		{
+			k=i;
+			i=(int) (i-Math.pow(2, j));
+			j++;
+		}
+		else break;//如果相等，则插在原数据之后
+	}
+	if(i<low2)
+	{
+		i=low2;
+	}
+	if(i==high2) return high2;//插到high2后面
+	if(i==k)/*!=high2 只有等=low2的情况*/  return low2-1;// 插到最前面
+	//二分查找
+    int high=k; 
+    int low=i;
+	while(low<=high)
+	{
+		int mid=(low+high)/2;
+		if(a[mid]==a[high1])
+		{
+			return mid;//相等则插在后面
+		}
+		else if(a[mid]<a[high1])
+		{
+			low=mid+1;
+		}
+		else high=mid-1;
+	}	
+	return high;//插到high之后的位置上
+}
+
+/* //合并
 //找右边run的第一个元素在左边run的什么位置
-//不用二分
+//gallop
 private static int findFirst(int low1,int high1,int low2,int high2)
 {
 	int i=low1;
@@ -269,6 +351,7 @@ private static int findLast(int low1,int high1,int low2,int high2)
 	}
 	return i;//插到i之后的位置上，如果相等插在右边run数据之前
 }
+ */
 
 //合并n和n+1,不管怎样n都是较小的那个
 private static void mergeMid(int n)
@@ -338,6 +421,7 @@ private void mergeAll()
 }
 
 //打印栈中run
+/*
 private void printRun(int n)
 {
 	for(int i=runBase[n];i<runBase[n]+runLength[n];i++)
@@ -346,6 +430,7 @@ private void printRun(int n)
 	}
 	System.out.println("");
 }
+*/
 
 //确保临时数组长度足够用
 private static int[] ensureTemp(int minCapacity) {
@@ -479,7 +564,7 @@ public static void  merge(int []a,int L,int R,int mid)//合并过程
 //mid是分界线，两个有序序列是[0,mid],[mid+1,R]
 {
 	
-	int[] b=new int[a.length];
+	int[] b=new int[R-L+1];
 	int i=L;
 	int j=mid+1;
 	int k=0;
